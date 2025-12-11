@@ -1,3 +1,5 @@
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.util.*;
 
 public class ArbolXML {
@@ -171,15 +173,133 @@ public class ArbolXML {
         return ordenados;
     }
 
+//----------------------METODO PARA LECTURA DEL XML------------------------
+public void cargarXML(String rutaArchivo) {
+
+    Stack<NodoXML> pila = new Stack<>();
+
+    try (BufferedReader br = new BufferedReader(new FileReader(rutaArchivo))) {
+
+        String linea;
+
+        while ((linea = br.readLine()) != null) {
+
+            linea = linea.trim();
+
+            if (linea.isEmpty()) continue;
 
 
+            // ============================================================
+            // CASO 1: ETIQUETA TIPO <tag>texto</tag>
+            // ============================================================
+            if (linea.contains("</") && linea.indexOf("</") > linea.indexOf(">")) {
+
+                // Ejemplo: <name>Wireless Mouse</name>
+
+                // 1. Extraer nombre de etiqueta de apertura
+                int ini = linea.indexOf("<") + 1;
+                int fin = linea.indexOf(">");
+                String nombre = linea.substring(ini, fin);
+
+                // 2. Crear nodo
+                NodoXML nuevo = new NodoXML(nombre);
+
+                // 3. Extraer texto
+                int iniTxt = fin + 1;
+                int finTxt = linea.indexOf("</");
+                String texto = linea.substring(iniTxt, finTxt).trim();
+                nuevo.setTexto(texto);
+
+                // 4. Insertarlo en el árbol
+                if (pila.isEmpty()) this.raiz = nuevo;
+                else pila.peek().addHijo(nuevo);
+
+                continue;
+            }
 
 
+            // ============================================================
+            // CASO 2: ETIQUETA DE CIERRE </tag>
+            // ============================================================
+            if (linea.startsWith("</")) {
 
+                String nombre = linea.substring(2, linea.length() - 1).trim();
+
+                if (!pila.isEmpty() && pila.peek().getNombreEtiqueta().equals(nombre)) {
+                    pila.pop();
+                } else {
+                    System.out.println("ERROR XML: etiqueta de cierre inesperada: " + linea);
+                }
+
+                continue;
+            }
+
+
+            // ============================================================
+            // CASO 3: ETIQUETA DE APERTURA <tag>
+            // ============================================================
+            if (linea.startsWith("<") && linea.endsWith(">")) {
+
+                // Si tiene un espacio → tiene atributos
+                String contenido = linea.substring(1, linea.length() - 1).trim();
+                String[] partes = contenido.split(" ");
+
+                String nombreEtiqueta = partes[0];
+                NodoXML nuevoNodo = new NodoXML(nombreEtiqueta);
+
+                // Procesar atributos
+                for (int i = 1; i < partes.length; i++) {
+                    if (partes[i].contains("=")) {
+                        String[] kv = partes[i].split("=");
+                        nuevoNodo.addAtributo(kv[0], kv[1].replace("\"", ""));
+                    }
+                }
+
+                if (pila.isEmpty()) this.raiz = nuevoNodo;
+                else pila.peek().addHijo(nuevoNodo);
+
+                pila.push(nuevoNodo);
+                continue;
+            }
+
+
+            // ============================================================
+            // CASO 4: TEXTO PURO EN LÍNEA SEPARADA
+            // ============================================================
+            if (!linea.startsWith("<") && !pila.isEmpty()) {
+                pila.peek().setTexto(linea);
+            }
+        }
+
+    } catch (Exception e) {
+        System.out.println("ERROR LEYENDO XML: " + e.getMessage());
+    }
+}
 
 
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,0 +1,23 @@
+<store>
+    <name>Tech Gadgets Store</name>
+    <location>1234 Tech Lane, Silicon Valley, CA</location>
+
+    <contact>
+        <phone>+1-800-123-4567</phone>
+        <email>support@example.sample.cat</email>
+    </contact>
+
+    <products>
+        <product>
+            <id>P001</id>
+            <name>Wireless Mouse</name>
+            <category>Accessories</category>
+        </product>
+
+        <product>
+            <id>P002</id>
+            <name>Mechanical Keyboard</name>
+            <category>Accessories</category>
+        </product>
+    </products>
+</store>
