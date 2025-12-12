@@ -69,7 +69,7 @@ public class Main {
 */
 
 
-        /*
+
         System.out.println("======= XML PARSER TEST =======");
 
         //Crear el arbol
@@ -124,7 +124,7 @@ public class Main {
 
         System.out.println("\n======= FIN DE PRUEBAS =======");
 
-*/
+/*
         System.out.println("======= XML PARSER TEST 2 de archivito =======");
 
         //Crear el arbol
@@ -179,7 +179,7 @@ public class Main {
 
         System.out.println("\n======= FIN DE PRUEBAS =======");
 
-
+*/
 
 
             }
