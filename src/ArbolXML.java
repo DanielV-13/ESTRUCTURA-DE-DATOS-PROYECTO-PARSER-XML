@@ -141,33 +141,28 @@ public class ArbolXML {
     }
 
 //-------------
-
+//REVISAR ESTE METODO
     //BUSCAR VALORES ORDENADOS
     public List<String> buscarValoresOrdenados(String etiqueta) {
 
         // 1. Buscar nodos con esa etiqueta
         List<NodoXML> encontrados = buscarPorEtiqueta(etiqueta);
 
-        // 2. Crear un MIN-HEAP (padre es el menor)
-        Heap<String> heap = new Heap<>(100, false, new Comparator<String>() {
-            @Override
-            public int compare(String a, String b) {
-                if (a == null) a = "";
-                if (b == null) b = "";
-                return a.compareToIgnoreCase(b);
-            }
-        });
+        // 2. Crear un MIN-HEAP para ordenar alfabeticamente
+        //Usamos el ComparatorTextoNodoXML
 
-        // 3. Meter los textos en el heap
+        Heap<NodoXML> heap = new Heap<>(100, false, new ComparatorTextoNodoXML() ) ;
+
+        // 3. Meter los nodos en el heap  (se ordenaran por su texto)
         for (NodoXML n : encontrados) {
-            heap.encolar(n.getTexto());
+            heap.encolar(n);
         }
 
-        // 4. Sacar valores ORDENADOS
+        // 4. Sacar valores (los textos) ORDENADOS
         List<String> ordenados = new ArrayList<>();
 
         while (!heap.estaVacio()) {
-            ordenados.add(heap.desencolar());
+            ordenados.add(heap.desencolar().getTexto());
         }
 
         return ordenados;
