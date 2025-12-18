@@ -81,31 +81,7 @@ public class ArbolXML {
         lista.add(new NodoNivel(nodo, nivel));
     }
 
-    //==================== ENORDEN ====================
 
-    //Metodo que retorna una lista con el recorrido ENORDEN
-    public List<NodoNivel> enOrdenFinal() {
-        List<NodoNivel> lista = new ArrayList<>();
-        enOrdenRecursivo(raiz, 0, lista);
-        return lista;
-    }
-
-    //Metodo recursivo auxiliar para ENORDEN
-    private void enOrdenRecursivo(NodoXML nodo, int nivel, List<NodoNivel> lista) {
-        if (nodo == null) return;
-        List<NodoXML> sons = nodo.getHijos(); //Obtengo el arreglo de hijos
-        int cantHijos = sons.size();          //Cantidad de hijos de ese nodo
-        int mitad = cantHijos / 2;            //Calculo la mitad del arreglo
-        //Mitad izquierda de los nodos
-        for (int i = 0; i < mitad; i++) {
-            enOrdenRecursivo(sons.get(i), nivel + 1, lista);
-        }
-        lista.add(new NodoNivel(nodo, nivel));
-        //Mitad derecha de los nodos
-        for (int i = mitad; i < cantHijos; i++) {
-            enOrdenRecursivo(sons.get(i), nivel + 1, lista);
-        }
-    }
 
 
     //---METODO PARA BUSCAR POR ETIQUETA EN EL ARBOL---
