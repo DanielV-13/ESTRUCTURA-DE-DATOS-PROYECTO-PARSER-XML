@@ -82,21 +82,17 @@ public class Main {
         arbol.cargarXML(ruta);
         System.out.println("\n[OK] Archivo XML cargado.\n");
 
-
         // 2. Recorrido PREORDEN
         System.out.println("=== PREORDEN ===");
-        arbol.preOrden(arbol.getRaiz());
-
+        arbol.imprimir(arbol.preOrdenFinal());
 
         // 3. Recorrido ENORDEN
         System.out.println("\n=== ENORDEN ===");
-        arbol.enOrden(arbol.getRaiz());
-
+        arbol.imprimir(arbol.enOrdenFinal());
 
         // 4. Recorrido POSTORDEN
         System.out.println("\n=== POSTORDEN ===");
-        arbol.PostOrden(arbol.getRaiz());
-
+        arbol.imprimir(arbol.postOrdenFinal());
 
         // 5. Buscar nodos por etiqueta
         System.out.println("\n=== BUSCAR ETIQUETA 'name' ===");
