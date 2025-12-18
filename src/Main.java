@@ -76,7 +76,7 @@ public class Main {
         ArbolXML arbol = new ArbolXML();
 
         // Archivo de prueba
-        String ruta = "src/archivo.xml";
+        String ruta = "src/archivito.xml";
 
         // 1. Cargar XML
         arbol.cargarXML(ruta);
@@ -86,9 +86,6 @@ public class Main {
         System.out.println("=== PREORDEN ===");
         arbol.imprimir(arbol.preOrdenFinal());
 
-        // 3. Recorrido ENORDEN
-        System.out.println("\n=== ENORDEN ===");
-        arbol.imprimir(arbol.enOrdenFinal());
 
         // 4. Recorrido POSTORDEN
         System.out.println("\n=== POSTORDEN ===");
