@@ -21,63 +21,90 @@ public class ArbolXML {
 
     //----------METODOS PARA IMPRIMIR LOS RECORRIDOS-------------
 
-    //PreOrden (raiz - izq - derecha)
-    public void preOrden(NodoXML nodo) {
-        //Caso Base
-        if (nodo == null){ return;} //Si esta vacio el nodo, sale del metodo
+    //Metodo para imprimir un arbol
+    public void imprimir(NodoXML nodo, int nivel) {
+        if (nodo == null) return;
 
-        //else
-        System.out.println(nodo);  //Imprime el nombre de la raiz (usando el toString de Nodo)
+        String indentacion = "  ".repeat(nivel);
+        System.out.println(indentacion + nodo);
 
-        //Recorre todos los hijos (izq y derecha)
-        for (NodoXML hijo : nodo.getHijos()) {  //Recorre la lista de hijos de ese nodo
-            preOrden(hijo);
+        for (NodoXML hijo : nodo.getHijos()) {
+            imprimir(hijo, nivel + 1);
         }
     }
 
+    //Metodo para imprimir una lista respetando el orden del recorrido
+    public void imprimir(List<NodoNivel> lista) {
+        for (NodoNivel elem : lista) {
+            String indentacion = "  ".repeat(elem.nivel);
+            System.out.println(indentacion + elem.nodo);
+        }
+    }
 
-//EnOrden (izq - raiz - derecha)  / SE REQUIERE SEPARLO EN 2 MITADES (para saber donde imprimir la raiz)
-    public void enOrden(NodoXML nodo) {
-        //Caso Base
-        if (nodo == null) {
-            return;}  //Si esta vacio el nodo, sale del metodo
+    //==================== PREORDEN ====================
 
+    //Metodo que retorna una lista con el recorrido PREORDEN
+    public List<NodoNivel> preOrdenFinal() {
+        List<NodoNivel> lista = new ArrayList<>();
+        preOrdenRecursivo(raiz, 0, lista);
+        return lista;
+    }
 
+    //Metodo recursivo auxiliar para PREORDEN
+    private void preOrdenRecursivo(NodoXML nodo, int nivel, List<NodoNivel> lista) {
+        if (nodo == null) return;
+
+        lista.add(new NodoNivel(nodo, nivel));
+
+        //Recorro todos los hijos (izq y derecha)
+        for (NodoXML hijo : nodo.getHijos()) {
+            preOrdenRecursivo(hijo, nivel + 1, lista);
+        }
+    }
+
+    //==================== POSTORDEN ====================
+
+    //Metodo que retorna una lista con el recorrido POSTORDEN
+    public List<NodoNivel> postOrdenFinal() {
+        List<NodoNivel> lista = new ArrayList<>();
+        postOrdenRecursivo(raiz, 0, lista);
+        return lista;
+    }
+
+    //Metodo recursivo auxiliar para POSTORDEN
+    private void postOrdenRecursivo(NodoXML nodo, int nivel, List<NodoNivel> lista) {
+        if (nodo == null) return;
+        //RECORRO TODOS LOS HIJOS (izq y derecha)
+        for (NodoXML hijo : nodo.getHijos()) {
+            postOrdenRecursivo(hijo, nivel + 1, lista);
+        }
+        lista.add(new NodoNivel(nodo, nivel));
+    }
+
+    //==================== ENORDEN ====================
+
+    //Metodo que retorna una lista con el recorrido ENORDEN
+    public List<NodoNivel> enOrdenFinal() {
+        List<NodoNivel> lista = new ArrayList<>();
+        enOrdenRecursivo(raiz, 0, lista);
+        return lista;
+    }
+
+    //Metodo recursivo auxiliar para ENORDEN
+    private void enOrdenRecursivo(NodoXML nodo, int nivel, List<NodoNivel> lista) {
+        if (nodo == null) return;
         List<NodoXML> sons = nodo.getHijos(); //Obtengo el arreglo de hijos
-        int cantHijos = sons.size();  //Cantindad de hijos de ese nodo
-        int mitad = cantHijos / 2; //Calculo la mitad del arreglo
-
-
+        int cantHijos = sons.size();          //Cantidad de hijos de ese nodo
+        int mitad = cantHijos / 2;            //Calculo la mitad del arreglo
         //Mitad izquierda de los nodos
         for (int i = 0; i < mitad; i++) {
-            NodoXML hijoN = sons.get(i);
-            //Aplicar recursivamente el metodo EnOrden a cada nodo
-            enOrden(hijoN);
+            enOrdenRecursivo(sons.get(i), nivel + 1, lista);
         }
-
-        System.out.println(nodo); //Imprimir el nodo actual (SIEMPRE SE IMPRIME EL NODO ACTUAL)
-
-        //Mitad Derecha de los Nodos
-        for (int i = mitad; i < cantHijos; i++) {   //Imprmir la mitad derecha
-            NodoXML hijoN = sons.get(i);
-            enOrden(hijoN);
+        lista.add(new NodoNivel(nodo, nivel));
+        //Mitad derecha de los nodos
+        for (int i = mitad; i < cantHijos; i++) {
+            enOrdenRecursivo(sons.get(i), nivel + 1, lista);
         }
-    }
-
-
-    //PostOrden (izq - derecha - raiz)
-    public void PostOrden(NodoXML nodo) {
-        //Caso Base
-        if (nodo == null){ return;} //Si esta vacio el nodo, sale del metodo
-
-        //else
-        //RECORRO TODOS LOS HIJOS (izq y derecha)
-        for (NodoXML hijo : nodo.getHijos()) {  //Recorre la lista de hijos de ese nodo
-            PostOrden(hijo);
-        }
-
-        System.out.println(nodo);  //Imprime el nombre de la raiz (usando el toString de Nodo)
-
     }
 
 
