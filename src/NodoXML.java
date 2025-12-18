@@ -53,10 +53,15 @@ public class NodoXML {
         return padre;
     }
 
+
+
     public List<NodoXML> getHijos(){
         return hijos;
     }
 
+    public Map<String, String> getAtributos() {
+        return atributos;
+    }
 
     //---------------OTROS METODOS---------
 

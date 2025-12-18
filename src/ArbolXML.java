@@ -1,6 +1,11 @@
+import javax.swing.*;
+import javax.swing.text.StyledDocument;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+
 
 public class ArbolXML {
 
@@ -21,65 +26,9 @@ public class ArbolXML {
 
     //----------METODOS PARA IMPRIMIR LOS RECORRIDOS-------------
 
-    //Metodo para imprimir un arbol
-    public void imprimir(NodoXML nodo, int nivel) {
-        if (nodo == null) return;
 
-        String indentacion = "  ".repeat(nivel);
-        System.out.println(indentacion + nodo);
 
-        for (NodoXML hijo : nodo.getHijos()) {
-            imprimir(hijo, nivel + 1);
-        }
-    }
 
-    //Metodo para imprimir una lista respetando el orden del recorrido
-    public void imprimir(List<NodoNivel> lista) {
-        for (NodoNivel elem : lista) {
-            String indentacion = "  ".repeat(elem.nivel);
-            System.out.println(indentacion + elem.nodo);
-        }
-    }
-
-    //==================== PREORDEN ====================
-
-    //Metodo que retorna una lista con el recorrido PREORDEN
-    public List<NodoNivel> preOrdenFinal() {
-        List<NodoNivel> lista = new ArrayList<>();
-        preOrdenRecursivo(raiz, 0, lista);
-        return lista;
-    }
-
-    //Metodo recursivo auxiliar para PREORDEN
-    private void preOrdenRecursivo(NodoXML nodo, int nivel, List<NodoNivel> lista) {
-        if (nodo == null) return;
-
-        lista.add(new NodoNivel(nodo, nivel));
-
-        //Recorro todos los hijos (izq y derecha)
-        for (NodoXML hijo : nodo.getHijos()) {
-            preOrdenRecursivo(hijo, nivel + 1, lista);
-        }
-    }
-
-    //==================== POSTORDEN ====================
-
-    //Metodo que retorna una lista con el recorrido POSTORDEN
-    public List<NodoNivel> postOrdenFinal() {
-        List<NodoNivel> lista = new ArrayList<>();
-        postOrdenRecursivo(raiz, 0, lista);
-        return lista;
-    }
-
-    //Metodo recursivo auxiliar para POSTORDEN
-    private void postOrdenRecursivo(NodoXML nodo, int nivel, List<NodoNivel> lista) {
-        if (nodo == null) return;
-        //RECORRO TODOS LOS HIJOS (izq y derecha)
-        for (NodoXML hijo : nodo.getHijos()) {
-            postOrdenRecursivo(hijo, nivel + 1, lista);
-        }
-        lista.add(new NodoNivel(nodo, nivel));
-    }
 
 
 
@@ -170,310 +119,270 @@ public class ArbolXML {
 
         return ordenados;
     }
+// ================== PROCESADORES DE LINEAS XML ==================
 
-    //----------------------METODOS PARA LECTURA DEL ARCHIVO XML-----------
+    private boolean procesarEtiquetaMixta(String linea, Stack<NodoXML> pila) {
 
-    //METODOS AUXILARES - devuelven boolean
+        int ini = linea.indexOf("<") + 1;
+        int fin = linea.indexOf(">");
 
-    // Detectar etiqueta mixta
-       //  <tag>texto</tag>
+        String nombre = linea.substring(ini, fin);
+        NodoXML nuevo = new NodoXML(nombre);
 
-    private boolean esEtiquetaMixta(String linea) {
-        return linea.contains("</") && linea.indexOf("</") > linea.indexOf(">");  //Deteca el indice del primer ">"
+        int iniTxt = fin + 1;
+        int finTxt = linea.indexOf("</");
+        String texto = linea.substring(iniTxt, finTxt).trim();
+        nuevo.setTexto(texto);
+
+        if (pila.isEmpty()) this.raiz = nuevo;
+        else pila.peek().addHijo(nuevo);
+
+        return true;
     }
 
-    //Detectar etiqueta de apertura <tag ...>
-    private boolean esEtiquetaApertura(String linea) {
-        return linea.startsWith("<") && !linea.startsWith("</") && linea.endsWith(">");
+    private boolean procesarCierre(String linea, Stack<NodoXML> pila) {
+
+        String nombre = linea.substring(2, linea.length() - 1).trim();
+
+        if (!pila.isEmpty() && pila.peek().getNombreEtiqueta().equals(nombre)) {
+            pila.pop();
+            return true;
+        }
+
+        System.out.println("ERROR XML: etiqueta de cierre inesperada: " + linea);
+        return false;
     }
 
-    //Detectar etiqueta de cierre </tag>
-    private boolean esEtiquetaCierre(String linea) {
-        return linea.startsWith("</") && linea.endsWith(">");
-    }
+    private void procesarApertura(String linea, Stack<NodoXML> pila) {
 
-
-
-    //Extraer nombre de etiqueta en apertura
-    private String extraerNombreApertura(String linea) {
-
-        // Quitar < > de la etiqueta de apertura (el primer y ultimo caracter)
         String contenido = linea.substring(1, linea.length() - 1).trim();
-
-        //El  "Nombre" es la primera palabra antes de un espacio
-        //<tag ...>
         String[] partes = contenido.split(" ");
 
-        return partes[0];  //Devuelve el nombre
-    }
+        NodoXML nuevoNodo = new NodoXML(partes[0]);
 
-
-
-    //Extraer nombre en cierre  </tag>
-    private String extraerNombreCierre(String linea) {
-
-        // Quitar </ > --- se quitan los 2 primeros caracteres y el ultimo
-        return linea.substring(2, linea.length() - 1).trim();
-    }
-
-
-    //Extraer texto de etiqueta mixta <tag>texto</tag>
-    private String extraerTextoMixto(String linea) {
-
-        int ini = linea.indexOf(">") + 1;  //El texto empieza despues del primer ">"
-        int fin = linea.indexOf("</");  //El texto termina antes del "</"
-
-        if (fin > ini) { //Si primero esta ">" y luego "</"
-            return linea.substring(ini, fin).trim();  //Devuelve lo que esta en medio
-        }
-
-        return "";  //Si no, NO devuelve nada porque no tiene texto
-    }
-
-    //Validación muy simple de nombre
-    private boolean nombreValido(String nombre) {
-        return nombre != null && !nombre.isEmpty() && !nombre.contains(" ");  //No debe ser nulo, no debe estar vacio,
-    }
-
-//--------------METODO cargarXML usando los anteriores metodos auxiliares------------
-/*public void cargarXML(String rutaArchivo) {
-
-    Stack<NodoXML> pila = new Stack<>();
-
-    try (BufferedReader br = new BufferedReader(new FileReader(rutaArchivo))) {
-
-        String linea;
-
-        while ((linea = br.readLine()) != null) {  //Mientas hayas lineas en el XML siga leyendo
-
-            linea = linea.trim();  //Quito espacios en blanco
-
-            if (linea.isEmpty()) continue;  //Si esta vacia la linea sigue a la otra
-
-
-            // ----------------------------------------------------
-            // CASO 1: ETIQUETA TIPO <tag>texto</tag>
-            // ---------------------------------------------------
-            if (esEtiquetaMixta(linea)) {
-
-                // 1. Obtener el nombre de la etiqueta de apertura
-                int ini = linea.indexOf("<") + 1;
-                int fin = linea.indexOf(">");
-                String nombre = linea.substring(ini, fin).trim();
-
-                if (!nombreValido(nombre)) {
-                    System.out.println("ERROR XML: etiqueta de apertura mal formada → " + linea);
-                    continue;
-                }
-
-                // 2. Crear nodo
-                NodoXML nuevo = new NodoXML(nombre);
-
-                // 3. Extraer texto interno
-                String texto = extraerTextoMixto(linea);
-                nuevo.setTexto(texto);
-
-                // 4. Insertar nodo en el árbol
-                if (pila.isEmpty()) this.raiz = nuevo;
-                else pila.peek().addHijo(nuevo);
-
-                continue; // No se apila porque se cierra inmediatamente
-            }
-
-
-            // ============================================================
-            // CASO 2: ETIQUETA DE CIERRE </tag>
-            // ============================================================
-            if (esEtiquetaCierre(linea)) {
-
-                String nombre = extraerNombreCierre(linea);
-
-                if (pila.isEmpty()) {
-                    System.out.println("ERROR XML: cierre sin apertura → " + linea);
-                    continue;
-                }
-
-                if (!pila.peek().getNombreEtiqueta().equals(nombre)) {
-                    System.out.println("ERROR XML: cierre inesperado → " + linea +
-                            " (se esperaba </" + pila.peek().getNombreEtiqueta() + ">)");
-                    continue;
-                }
-
-                pila.pop();
-                continue;
-            }
-
-
-            // ============================================================
-            // CASO 3: ETIQUETA DE APERTURA <tag>
-            // ============================================================
-            if (esEtiquetaApertura(linea)) {
-
-                String nombreEtiqueta = extraerNombreApertura(linea);
-
-                if (!nombreValido(nombreEtiqueta)) {
-                    System.out.println("ERROR XML: etiqueta mal formada → " + linea);
-                    continue;
-                }
-
-                NodoXML nuevoNodo = new NodoXML(nombreEtiqueta);
-
-                // Procesar atributos simples
-                String contenido = linea.substring(1, linea.length() - 1).trim();
-                String[] partes = contenido.split(" ");
-
-                for (int i = 1; i < partes.length; i++) {
-                    if (partes[i].contains("=")) {
-                        String[] kv = partes[i].split("=");
-                        if (kv.length == 2) {
-                            nuevoNodo.addAtributo(
-                                    kv[0],
-                                    kv[1].replace("\"", "")
-                            );
-                        }
-                    }
-                }
-
-                if (pila.isEmpty()) this.raiz = nuevoNodo;
-                else pila.peek().addHijo(nuevoNodo);
-
-                pila.push(nuevoNodo);
-                continue;
-            }
-
-
-            // ============================================================
-            // CASO 4: TEXTO PURO ENTRE ETIQUETAS
-            // ============================================================
-            if (!linea.startsWith("<") && !pila.isEmpty()) {
-                pila.peek().setTexto(linea);
+        for (int i = 1; i < partes.length; i++) {
+            if (partes[i].contains("=")) {
+                String[] kv = partes[i].split("=");
+                nuevoNodo.addAtributo(kv[0], kv[1].replace("\"", ""));
             }
         }
 
-    } catch (Exception e) {
-        System.out.println("ERROR LEYENDO XML: " + e.getMessage());
+        if (pila.isEmpty()) this.raiz = nuevoNodo;
+        else pila.peek().addHijo(nuevoNodo);
+
+        pila.push(nuevoNodo);
+    }
+
+    private void procesarTexto(String linea, Stack<NodoXML> pila) {
+        if (!pila.isEmpty()) {
+            pila.peek().setTexto(linea);
+        }
+    }
+
+    private boolean validarXMLFinal(Stack<NodoXML> pila) {
+        if (!pila.isEmpty()) {
+            System.out.println("ERROR XML: etiquetas sin cerrar");
+            return false;
+        }
+        return true;
     }
 
 
-    // ============================================================
-    // VALIDACIÓN FINAL: PILA DEBE QUEDAR VACÍA
-    // ============================================================
-    if (!pila.isEmpty()) {
-        System.out.println("ERROR XML: faltan etiquetas de cierre. Última abierta → <"
-                + pila.peek().getNombreEtiqueta() + ">");
+
+    public boolean cargarXML(String rutaArchivo) {
+
+        Stack<NodoXML> pila = new Stack<>();
+
+        try (BufferedReader br = new BufferedReader(new FileReader(rutaArchivo))) {
+
+            String linea;
+
+            while ((linea = br.readLine()) != null) {
+
+                linea = linea.trim();
+                if (linea.isEmpty()) continue;
+
+                // <tag>texto</tag>
+                if (linea.contains("</") && linea.indexOf("</") > linea.indexOf(">")) {
+                    procesarEtiquetaMixta(linea, pila);
+                    continue;
+                }
+
+                // </tag>
+                if (linea.startsWith("</")) {
+                    if (!procesarCierre(linea, pila)) return false;
+                    continue;
+                }
+
+                // <tag ...>
+                if (linea.startsWith("<") && linea.endsWith(">")) {
+                    procesarApertura(linea, pila);
+                    continue;
+                }
+
+                // texto suelto
+                procesarTexto(linea, pila);
+            }
+
+            return validarXMLFinal(pila);
+
+        } catch (Exception e) {
+            System.out.println("ERROR LEYENDO XML: " + e.getMessage());
+            return false;
+        }
     }
-}
-
-
-*/
 
 
 
+    public List<String> buscarValoresPorEtiqueta(String etiqueta) {
 
+        List<String> resultado = new ArrayList<>();
 
+        buscarValoresRec(this.raiz, etiqueta, resultado);
 
-    //----------------------METODO PARA LECTURA DEL XML------------------------
-public void cargarXML(String rutaArchivo) {
+        return resultado;
+    }
 
-    Stack<NodoXML> pila = new Stack<>();
+    // Método auxiliar recursivo
+    private void buscarValoresRec(NodoXML nodo, String etiqueta, List<String> resultado) {
 
-    try (BufferedReader br = new BufferedReader(new FileReader(rutaArchivo))) {
+        if (nodo == null) return;
 
-        String linea;
+        // Si coincide la etiqueta, guardar SOLO el texto
+        if (nodo.getNombreEtiqueta().equals(etiqueta)) {
 
-        while ((linea = br.readLine()) != null) {
-
-            linea = linea.trim();
-
-            if (linea.isEmpty()) continue;
-
-
-            // ============================================================
-            // CASO 1: ETIQUETA TIPO <tag>texto</tag>
-            // ============================================================
-            if (linea.contains("</") && linea.indexOf("</") > linea.indexOf(">")) {
-
-                // Ejemplo: <name>Wireless Mouse</name>
-
-                // 1. Extraer nombre de etiqueta de apertura
-                int ini = linea.indexOf("<") + 1;
-                int fin = linea.indexOf(">");
-                String nombre = linea.substring(ini, fin);
-
-                // 2. Crear nodo
-                NodoXML nuevo = new NodoXML(nombre);
-
-                // 3. Extraer texto
-                int iniTxt = fin + 1;
-                int finTxt = linea.indexOf("</");
-                String texto = linea.substring(iniTxt, finTxt).trim();
-                nuevo.setTexto(texto);
-
-                // 4. Insertarlo en el árbol
-                if (pila.isEmpty()) this.raiz = nuevo;
-                else pila.peek().addHijo(nuevo);
-
-                continue;
-            }
-
-
-            // ============================================================
-            // CASO 2: ETIQUETA DE CIERRE </tag>
-            // ============================================================
-            if (linea.startsWith("</")) {
-
-                String nombre = linea.substring(2, linea.length() - 1).trim();
-
-                if (!pila.isEmpty() && pila.peek().getNombreEtiqueta().equals(nombre)) {
-                    pila.pop();
-                } else {
-                    System.out.println("ERROR XML: etiqueta de cierre inesperada: " + linea);
-                }
-
-                continue;
-            }
-
-
-            // ============================================================
-            // CASO 3: ETIQUETA DE APERTURA <tag>
-            // ============================================================
-            if (linea.startsWith("<") && linea.endsWith(">")) {
-
-                // Si tiene un espacio → tiene atributos
-                String contenido = linea.substring(1, linea.length() - 1).trim();
-                String[] partes = contenido.split(" ");
-
-                String nombreEtiqueta = partes[0];
-                NodoXML nuevoNodo = new NodoXML(nombreEtiqueta);
-
-                // Procesar atributos
-                for (int i = 1; i < partes.length; i++) {
-                    if (partes[i].contains("=")) {
-                        String[] kv = partes[i].split("=");
-                        nuevoNodo.addAtributo(kv[0], kv[1].replace("\"", ""));
-                    }
-                }
-
-                if (pila.isEmpty()) this.raiz = nuevoNodo;
-                else pila.peek().addHijo(nuevoNodo);
-
-                pila.push(nuevoNodo);
-                continue;
-            }
-
-
-            // ============================================================
-            // CASO 4: TEXTO PURO EN LÍNEA SEPARADA
-            // ============================================================
-            if (!linea.startsWith("<") && !pila.isEmpty()) {
-                pila.peek().setTexto(linea);
+            if (nodo.getTexto() != null && !nodo.getTexto().isEmpty()) {
+                resultado.add(nodo.getTexto());
             }
         }
 
-    } catch (Exception e) {
-        System.out.println("ERROR LEYENDO XML: " + e.getMessage());
+        // Seguir recorriendo hijos (orden natural del árbol)
+        for (NodoXML hijo : nodo.getHijos()) {
+            buscarValoresRec(hijo, etiqueta, resultado);
+        }
     }
-}
+
+    public List<String> buscarValoresOrdenadosPorEtiqueta(String etiqueta) {
+
+        // 1. Primero buscar los valores SIN ordenar
+        List<String> valores = buscarValoresPorEtiqueta(etiqueta);
+
+        // 2. Crear un MIN-HEAP para ordenar alfabéticamente
+        Heap<String> heap = new Heap<>(100, false, String::compareToIgnoreCase);
+
+        // 3. Insertar valores en el Heap
+        for (String v : valores) {
+            heap.encolar(v);
+        }
+
+        // 4. Extraer ordenados
+        List<String> ordenados = new ArrayList<>();
+
+        while (!heap.estaVacio()) {
+            ordenados.add(heap.desencolar());
+        }
+
+        return ordenados;
+    }
+
+    public void imprimirPreordenVisual(
+            NodoXML nodo,
+            String prefijo,
+            boolean esUltimo,
+            JTextPane pane
+    ) {
+        if (nodo == null) return;
+
+        StyledDocument doc = pane.getStyledDocument();
+
+        try {
+            // Dibujar ramas ASCII
+            doc.insertString(doc.getLength(),
+                    prefijo + (esUltimo ? "└── " : "├── "),
+                    doc.getStyle("TEXTO")
+            );
+
+            // Etiqueta
+            doc.insertString(doc.getLength(),
+                    nodo.getNombreEtiqueta(),
+                    doc.getStyle("ETIQUETA")
+            );
+
+            // Texto del nodo
+            if (nodo.getTexto() != null && !nodo.getTexto().isEmpty()) {
+                doc.insertString(doc.getLength(),
+                        " : " + nodo.getTexto(),
+                        doc.getStyle("TEXTO")
+                );
+            }
+
+            doc.insertString(doc.getLength(), "\n", doc.getStyle("TEXTO"));
+
+            // Preparar prefijo para hijos
+            String nuevoPrefijo = prefijo + (esUltimo ? "    " : "│   ");
+
+            for (int i = 0; i < nodo.getHijos().size(); i++) {
+                boolean ultimoHijo = (i == nodo.getHijos().size() - 1);
+                imprimirPreordenVisual(
+                        nodo.getHijos().get(i),
+                        nuevoPrefijo,
+                        ultimoHijo,
+                        pane
+                );
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void imprimirPostordenVisual(
+            NodoXML nodo,
+            String prefijo,
+            JTextPane pane
+    ) {
+        if (nodo == null) return;
+
+        StyledDocument doc = pane.getStyledDocument();
+
+        try {
+            // 1. Recorrer hijos primero
+            for (NodoXML hijo : nodo.getHijos()) {
+                imprimirPostordenVisual(
+                        hijo,
+                        prefijo + "│   ",
+                        pane
+                );
+            }
+
+            // 2. Imprimir el nodo como cierre del bloque
+            doc.insertString(
+                    doc.getLength(),
+                    prefijo + "└── ",
+                    doc.getStyle("TEXTO")
+            );
+
+            doc.insertString(
+                    doc.getLength(),
+                    nodo.getNombreEtiqueta(),
+                    doc.getStyle("ETIQUETA")
+            );
+
+            if (nodo.getTexto() != null && !nodo.getTexto().isEmpty()) {
+                doc.insertString(
+                        doc.getLength(),
+                        " : " + nodo.getTexto(),
+                        doc.getStyle("TEXTO")
+                );
+            }
+
+            doc.insertString(doc.getLength(), "\n", doc.getStyle("TEXTO"));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 
 
 
