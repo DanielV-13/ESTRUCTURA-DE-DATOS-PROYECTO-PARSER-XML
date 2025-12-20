@@ -2,6 +2,8 @@ import javax.swing.*;
 import javax.swing.text.StyledDocument;
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -297,6 +299,176 @@ public class ArbolXML {
             e.printStackTrace();
         }
     }
+
+    //----FUNCIONALIDAD EXTRA-------
+    // ==========================================================
+// BUSCAR NODOS COMPLETOS POR ETIQUETA (para insertar hijos)
+// ==========================================================
+    public List<NodoXML> buscarPorEtiqueta(String etiqueta) {
+
+        List<NodoXML> resultado = new ArrayList<>();
+
+        buscarNodosRec(this.raiz, etiqueta, resultado);
+
+        return resultado;
+    }
+
+    // Método auxiliar recursivo
+    private void buscarNodosRec(
+            NodoXML nodo,
+            String etiqueta,
+            List<NodoXML> resultado
+    ) {
+        if (nodo == null) return;
+
+        if (nodo.getNombreEtiqueta().equals(etiqueta)) {
+            resultado.add(nodo);
+        }
+
+        for (NodoXML hijo : nodo.getHijos()) {
+            buscarNodosRec(hijo, etiqueta, resultado);
+        }
+    }
+
+    // ==========================================================
+// NUEVA FUNCIONALIDAD: AGREGAR NODO AL ÁRBOL
+// ==========================================================
+    public boolean agregarNodo(
+            String etiquetaPadre,
+            String nuevaEtiqueta,
+            String texto
+    ) {
+
+        // 1. Buscar nodos con la etiqueta padre
+        List<NodoXML> padres = buscarPorEtiqueta(etiquetaPadre);
+
+        if (padres.isEmpty()) {
+            return false; // No existe el padre
+        }
+
+        // 2. Tomar el PRIMER padre encontrado
+        NodoXML padre = padres.get(0);
+
+        // 3. Crear nuevo nodo
+        NodoXML nuevo = new NodoXML(nuevaEtiqueta);
+        nuevo.setTexto(texto);
+
+        // 4. Agregar como hijo
+        padre.addHijo(nuevo);
+
+        return true;
+    }
+
+    // ==========================================================
+// GUARDAR EL ÁRBOL XML ACTUAL EN ARCHIVO
+// ==========================================================
+    public boolean guardarXML(String rutaArchivo) {
+
+        try (FileWriter fw = new FileWriter(rutaArchivo)) {
+            fw.write(generarXML());
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
+    // ==========================================================
+// ESCRIBIR UN NODO XML (RECURSIVO)
+// ==========================================================
+    private void escribirNodoXML(
+            NodoXML nodo,
+            java.io.PrintWriter pw,
+            int nivel
+    ) {
+        if (nodo == null) return;
+
+        String indent = "    ".repeat(nivel);
+
+        // 1. Abrir etiqueta + atributos
+        pw.print(indent + "<" + nodo.getNombreEtiqueta());
+
+        for (Map.Entry<String, String> attr : nodo.getAtributos().entrySet()) {
+            pw.print(" " + attr.getKey() + "=\"" + attr.getValue() + "\"");
+        }
+
+        // 2. Caso: nodo sin hijos y sin texto
+        if (nodo.getHijos().isEmpty() &&
+                (nodo.getTexto() == null || nodo.getTexto().isEmpty())) {
+
+            pw.println(" />");
+            return;
+        }
+
+        pw.print(">");
+
+        // 3. Texto
+        if (nodo.getTexto() != null && !nodo.getTexto().isEmpty()) {
+            pw.print(nodo.getTexto());
+        }
+
+        // 4. Hijos
+        if (!nodo.getHijos().isEmpty()) {
+            pw.println();
+
+            for (NodoXML hijo : nodo.getHijos()) {
+                escribirNodoXML(hijo, pw, nivel + 1);
+            }
+
+            pw.print(indent);
+        }
+
+        // 5. Cerrar etiqueta
+        pw.println("</" + nodo.getNombreEtiqueta() + ">");
+    }
+
+    // ==========================================================
+// EXPORTAR EL ÁRBOL A TEXTO XML
+// ==========================================================
+    public String generarXML() {
+
+        if (raiz == null) {
+            return "";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        generarXMLRec(raiz, sb, 0);
+        return sb.toString();
+    }
+
+    private void generarXMLRec(NodoXML nodo, StringBuilder sb, int nivel) {
+
+        if (nodo == null) return;
+
+        String indent = "    ".repeat(nivel);
+
+        // Apertura
+        sb.append(indent).append("<").append(nodo.getNombreEtiqueta()).append(">");
+
+        // Texto
+        if (nodo.getTexto() != null && !nodo.getTexto().isEmpty()) {
+            sb.append(nodo.getTexto());
+        }
+
+        // Hijos
+        if (!nodo.getHijos().isEmpty()) {
+            sb.append("\n");
+            for (NodoXML hijo : nodo.getHijos()) {
+                generarXMLRec(hijo, sb, nivel + 1);
+            }
+            sb.append(indent);
+        }
+
+        // Cierre
+        sb.append("</").append(nodo.getNombreEtiqueta()).append(">\n");
+    }
+
+
+
+
+
+
+
+
 
 
 

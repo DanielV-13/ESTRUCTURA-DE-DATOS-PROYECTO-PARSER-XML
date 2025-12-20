@@ -45,6 +45,8 @@ public class VentanaXML extends JFrame {
         panelContenido.add(crearPanelRecorridos(), "RECORRIDOS");
         panelContenido.add(crearPanelBusqueda(), "BUSQUEDA");
         panelContenido.add(crearPanelOrdenamiento(), "ORDENAMIENTO");
+        panelContenido.add(crearPanelAgregarNodo(), "AGREGAR");
+
 
         add(panelContenido, BorderLayout.CENTER);
 
@@ -75,6 +77,7 @@ public class VentanaXML extends JFrame {
         JButton btnRecorridos = crearBotonMenu("🔁 Recorridos");
         JButton btnBusqueda = crearBotonMenu("🔎 Búsqueda");
         JButton btnOrden = crearBotonMenu("📚 Ordenamiento");
+        JButton btnAgregar = crearBotonMenu("➕ Agregar Nodo");
 
         // Solo cambian de vista (sin lógica)
         btnInicio.addActionListener(e -> cardLayout.show(panelContenido, "INICIO"));
@@ -82,6 +85,8 @@ public class VentanaXML extends JFrame {
         btnRecorridos.addActionListener(e -> cardLayout.show(panelContenido, "RECORRIDOS"));
         btnBusqueda.addActionListener(e -> cardLayout.show(panelContenido, "BUSQUEDA"));
         btnOrden.addActionListener(e -> cardLayout.show(panelContenido, "ORDENAMIENTO"));
+        btnAgregar.addActionListener(e -> cardLayout.show(panelContenido, "AGREGAR"));
+
 
         menu.add(btnInicio);
         menu.add(Box.createRigidArea(new Dimension(0, 10)));
@@ -92,6 +97,9 @@ public class VentanaXML extends JFrame {
         menu.add(btnBusqueda);
         menu.add(Box.createRigidArea(new Dimension(0, 10)));
         menu.add(btnOrden);
+        menu.add(Box.createRigidArea(new Dimension(0, 10)));
+        menu.add(btnAgregar);
+
 
         return menu;
     }
@@ -402,6 +410,159 @@ public class VentanaXML extends JFrame {
         // ===== ARMAR PANEL =====
         p.add(top, BorderLayout.NORTH);
         p.add(scroll, BorderLayout.CENTER);
+
+        return p;
+    }
+    private JPanel crearPanelAgregarNodo() {
+
+        JPanel p = new JPanel(new BorderLayout());
+        p.setBackground(Color.WHITE);
+        p.setBorder(new EmptyBorder(30, 40, 30, 30));
+
+        // ===== TÍTULO =====
+        JLabel titulo = new JLabel("Agregar nuevo nodo al XML");
+        titulo.setFont(new Font("Segoe UI", Font.BOLD, 26));
+        titulo.setForeground(new Color(44, 62, 80));
+
+        JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        top.setOpaque(false);
+        top.add(titulo);
+
+        // ===== FORMULARIO (alineado a la izquierda) =====
+        JPanel formWrapper = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        formWrapper.setOpaque(false);
+
+        JPanel form = new JPanel(new GridLayout(3, 2, 15, 18));
+        form.setOpaque(false);
+
+        Font labelFont = new Font("Segoe UI", Font.PLAIN, 16);
+        Font fieldFont = new Font("Segoe UI", Font.PLAIN, 15);
+
+        JTextField txtPadre = new JTextField();
+        JTextField txtEtiqueta = new JTextField();
+        JTextField txtTexto = new JTextField();
+
+        Dimension fieldSize = new Dimension(320, 32);
+        txtPadre.setPreferredSize(fieldSize);
+        txtEtiqueta.setPreferredSize(fieldSize);
+        txtTexto.setPreferredSize(fieldSize);
+
+        txtPadre.setFont(fieldFont);
+        txtEtiqueta.setFont(fieldFont);
+        txtTexto.setFont(fieldFont);
+
+        JLabel lblPadre = new JLabel("Etiqueta del padre:");
+        JLabel lblEtiqueta = new JLabel("Nueva etiqueta:");
+        JLabel lblTexto = new JLabel("Texto del nodo:");
+
+        lblPadre.setFont(labelFont);
+        lblEtiqueta.setFont(labelFont);
+        lblTexto.setFont(labelFont);
+
+        form.add(lblPadre);
+        form.add(txtPadre);
+        form.add(lblEtiqueta);
+        form.add(txtEtiqueta);
+        form.add(lblTexto);
+        form.add(txtTexto);
+
+        formWrapper.add(form);
+
+        // ===== BOTONES =====
+        JButton btnAgregar = new JButton("Agregar nodo");
+        JButton btnGuardar = new JButton("Guardar XML");
+
+        btnAgregar.setFont(new Font("Segoe UI", Font.PLAIN, 15));
+        btnGuardar.setFont(new Font("Segoe UI", Font.PLAIN, 15));
+
+        JPanel botones = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 15));
+        botones.setOpaque(false);
+        botones.add(btnAgregar);
+        botones.add(btnGuardar);
+
+        // ===== SALIDA =====
+        JTextArea salida = new JTextArea(6, 60);
+        salida.setEditable(false);
+        salida.setFont(new Font("Consolas", Font.PLAIN, 14));
+
+        JScrollPane scroll = new JScrollPane(salida);
+
+        JPanel bottom = new JPanel(new BorderLayout(10, 10));
+        bottom.setOpaque(false);
+        bottom.add(botones, BorderLayout.NORTH);
+        bottom.add(scroll, BorderLayout.CENTER);
+
+        // ===== LÓGICA (NO SE TOCA) =====
+        btnAgregar.addActionListener(e -> {
+
+            if (!xmlValidoCargado) {
+                salida.setText("⚠️ Primero carga un XML válido.");
+                return;
+            }
+
+            String padre = txtPadre.getText().trim();
+            String etiqueta = txtEtiqueta.getText().trim();
+            String texto = txtTexto.getText().trim();
+
+            if (padre.isEmpty() || etiqueta.isEmpty()) {
+                salida.setText("⚠️ Completa al menos el padre y la etiqueta.");
+                return;
+            }
+
+            boolean ok = arbol.agregarNodo(padre, etiqueta, texto);
+
+            if (ok) {
+                salida.setText(
+                        "✅ Nodo agregado correctamente\n\n" +
+                                "Padre: " + padre +
+                                "\nEtiqueta: " + etiqueta +
+                                "\nTexto: " + texto
+                );
+            } else {
+                salida.setText(
+                        "❌ No se encontró un nodo padre con etiqueta <" + padre + ">"
+                );
+            }
+        });
+
+        btnGuardar.addActionListener(e -> {
+
+            if (!xmlValidoCargado) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "No hay un XML cargado para guardar.",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
+                return;
+            }
+
+            JFileChooser chooser = new JFileChooser();
+            chooser.setDialogTitle("Guardar XML");
+
+            int result = chooser.showSaveDialog(this);
+            if (result != JFileChooser.APPROVE_OPTION) return;
+
+            File archivo = chooser.getSelectedFile();
+
+            if (!archivo.getName().toLowerCase().endsWith(".xml")) {
+                archivo = new File(archivo.getAbsolutePath() + ".xml");
+            }
+
+            boolean ok = arbol.guardarXML(archivo.getAbsolutePath());
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    ok ? "XML guardado correctamente" : "Error al guardar el XML",
+                    ok ? "Éxito" : "Error",
+                    ok ? JOptionPane.INFORMATION_MESSAGE : JOptionPane.ERROR_MESSAGE
+            );
+        });
+
+        // ===== ARMAR PANEL =====
+        p.add(top, BorderLayout.NORTH);
+        p.add(formWrapper, BorderLayout.CENTER);
+        p.add(bottom, BorderLayout.SOUTH);
 
         return p;
     }
