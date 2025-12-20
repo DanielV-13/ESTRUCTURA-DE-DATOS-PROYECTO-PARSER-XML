@@ -26,10 +26,8 @@ public class ArbolXML {
     }
 
 
-
-
-// ================== PROCESADORES DE LINEAS XML ==================
-
+    //-----------------------------------------------------------------------------------------------------------------
+//---METODOS AUXILIARES PARA PODER LEER Y VALIDAR EL ARBOL XML------
     private boolean procesarEtiquetaMixta(String linea, Stack<NodoXML> pila) {
 
         int ini = linea.indexOf("<") + 1;
@@ -97,7 +95,7 @@ public class ArbolXML {
     }
 
 
-
+//--METODO PRINCIPAL PARA cargarXML-----
     public boolean cargarXML(String rutaArchivo) {
 
         Stack<NodoXML> pila = new Stack<>();
@@ -141,7 +139,8 @@ public class ArbolXML {
         }
     }
 
-
+//---------------------------------------------------------------------------------------------------------------------
+    //------------METODOS PARA BUSQUEDAS DENTRO DEL ARBOL--------------------------------------
     //BUSCAR VALORES POR ETIQUETA (SIN ORDEN)
 
     public List<String> buscarValoresPorEtiqueta(String etiqueta) {
@@ -173,31 +172,34 @@ public class ArbolXML {
         }
     }
 
-    //BUSCAR PERO ORDENADO (USANDO EL MIN HEAP)
+
+    // BUSCAR ORDENADO (USANDO EL MIN HEAP Y EL COMPARATOR)
     public List<String> buscarValoresOrdenadosPorEtiqueta(String etiqueta) {
 
-        // 1. Primero buscar los valores SIN ordenar
-        List<String> valores = buscarValoresPorEtiqueta(etiqueta);
+        List<NodoXML> nodosEncontrados = buscarPorEtiqueta(etiqueta);
 
-        // 2. Crear un MIN-HEAP para ordenar alfabéticamente
-        Heap<String> heap = new Heap<>(100, false, String::compareToIgnoreCase);
+        //  Crear un MIN-HEAP de tipo <NodoXML> usando TU comparador
+        // false = Min-Heap (orden alfabético ascendente)
+        // Pasamos una instancia de la clase ComparatorTextoNodoXML
+        Heap<NodoXML> heap = new Heap<>(100, false, new ComparatorTextoNodoXML());
 
-        // 3. Insertar valores en el Heap
-        for (String v : valores) {
-            heap.encolar(v);
+        // 3. Insertar los nodos completos en el Heap
+        for (NodoXML nodo : nodosEncontrados) {
+            heap.encolar(nodo);
         }
 
-        // 4. Extraer ordenados
-        List<String> ordenados = new ArrayList<>();
+        // 4. Extraer del Heap (ya salen ordenados por el comparador) y guardar solo el texto
+        List<String> resultadosOrdenados = new ArrayList<>();
 
         while (!heap.estaVacio()) {
-            ordenados.add(heap.desencolar());
+            NodoXML nodoOrdenado = heap.desencolar();
+            // Aquí extraemos el texto para retornar un List<String>
+            resultadosOrdenados.add(nodoOrdenado.getTexto());
         }
 
-        return ordenados;
+        return resultadosOrdenados;
     }
-
-
+//--------------------------------------------------------------------------------------------
     //-----------RECORRIDOS----------------
     //IMPRIMIR PREORDEN
 
@@ -299,7 +301,7 @@ public class ArbolXML {
             e.printStackTrace();
         }
     }
-
+//------------------------------------------------------------------
     //----FUNCIONALIDAD EXTRA-------
     // ==========================================================
 // BUSCAR NODOS COMPLETOS POR ETIQUETA (para insertar hijos)
@@ -461,14 +463,6 @@ public class ArbolXML {
         // Cierre
         sb.append("</").append(nodo.getNombreEtiqueta()).append(">\n");
     }
-
-
-
-
-
-
-
-
 
 
 
