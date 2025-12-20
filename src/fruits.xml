@@ -1,0 +1,41 @@
+<fruteria>
+<fruits>
+    <name>Apple</name>
+    <color>#FF0000</color>
+    <details>
+        <type>Pome</type>
+        <season>Fall</season>
+    </details>
+    <nutrients>
+        <calories>52</calories>
+        <fiber>2.4g</fiber>
+        <vitaminC>4.6mg</vitaminC>
+    </nutrients>
+</fruits>
+<fruits>
+<name>Banana</name>
+<color>#FFFF00</color>
+<details>
+    <type>Berry</type>
+    <season>Year-round</season>
+</details>
+<nutrients>
+    <calories>89</calories>
+    <fiber>2.6g</fiber>
+    <potassium>358mg</potassium>
+</nutrients>
+</fruits>
+<fruits>
+<name>Orange</name>
+<color>#FFA500</color>
+<details>
+    <type>Citrus</type>
+    <season>Winter</season>
+</details>
+<nutrients>
+    <calories>47</calories>
+    <fiber>2.4</fiber>
+    <vitaminC>53.2mg</vitaminC>
+</nutrients>
+</fruits>
+</fruteria>
