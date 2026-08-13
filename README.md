@@ -12,8 +12,13 @@ Analizador (parser) de archivos XML implementado desde cero en Java, sin librer�
 ## Capturas / Demo
 
 ![Vista principal](main.png)
+<img width="814" height="481" alt="main2" src="https://github.com/user-attachments/assets/06732e35-5f86-4c76-98cd-94ffc9f32c62" />
+<img width="814" height="481" alt="main4" src="https://github.com/user-attachments/assets/27487153-db17-4ecf-97d9-61b10c54600d" />
+<img width="813" height="482" alt="main3" src="https://github.com/user-attachments/assets/1be560f7-fc78-4369-9c6b-936a79ea58bd" />
+<img width="816" height="482" alt="main5" src="https://github.com/user-attachments/assets/9eeda9b9-9aeb-4846-935f-c62bc7a18f8f" />
+<img width="812" height="482" alt="main6" src="https://github.com/user-attachments/assets/81623821-ba7d-44a4-bf88-0ea1d69f12e8" />
+<img width="820" height="482" alt="main7" src="https://github.com/user-attachments/assets/c771d4fe-85d1-4138-b0cf-3538a807df5c" />
 
-> Demo en vivo: _(no aplica — aplicación de escritorio)_ | Video/GIF: _[opcional]_
 
 ## Funcionalidad
 
