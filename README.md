@@ -11,7 +11,7 @@ Analizador (parser) de archivos XML implementado desde cero en Java, sin librer�
 
 ## Capturas / Demo
 
-![Vista principal](docs/screenshots/main.png)
+![Vista principal](main.png)
 
 > Demo en vivo: _(no aplica — aplicación de escritorio)_ | Video/GIF: _[opcional]_
 
